@@ -13,8 +13,6 @@ requires-python = ">=3.10"
 dependencies = ["PyYAML>=6.0"]
 
 [project.optional-dependencies]
-# `pip install -e .[ai]` if you want the health checker's AI explanation locally.
-ai = ["openai>=1.0"]
 # `pip install -e .[web]` for the browser UI: streamlit run app.py
 web = ["streamlit>=1.30"]
 

@@ -127,7 +127,6 @@ they produce identical files.
 | pip | package installer |
 | pytest | runs tests |
 | GitHub Actions | automatic testing |
-| Groq API | optional AI |
 
 ## Health checker
 
@@ -135,11 +134,6 @@ If you say yes, cloud-init places [templates/health.py](templates/health.py) at
 `/opt/health/health.py` on the server, installs `python3` and `python3-venv`, and
 adds a cron job that runs it every hour and appends to `/var/log/health.log`.
 It reports disk usage, memory usage and whether `cron` is active.
-
-Optional AI: if `GROQ_API_KEY` is set in the environment and the `openai`
-package is installed on the server, the report is also explained in two plain
-sentences by Groq. No key, no AI, just the numbers. Keys are never stored in the
-file.
 
 ## What I learned
 

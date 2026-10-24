@@ -8,14 +8,8 @@ It checks three things:
   * disk usage of "/"           (shutil.disk_usage)
   * memory used                 (/proc/meminfo: MemTotal and MemAvailable)
   * whether some services run   (systemctl is-active <name>)
-
-Optional AI explanation: if the GROQ_API_KEY environment variable is set AND the
-`openai` package is installed, the report is sent to Groq and a two-sentence
-plain-English answer is printed too. Without a key it just prints the numbers.
-The key is only ever read from the environment, never written in this file.
 """
 
-import os
 import shutil
 import subprocess
 from datetime import datetime
@@ -26,11 +20,6 @@ SERVICES = ["cron"]
 # Above these percentages the report says WARNING.
 DISK_WARN = 90
 MEMORY_WARN = 90
-
-PROMPT = (
-    "You are a friendly Linux helper. In two short sentences, say whether this "
-    "server is healthy, and if anything looks wrong, give one fix. Data:"
-)
 
 
 def disk_percent(path="/"):
@@ -75,33 +64,8 @@ def build_report():
     return "\n".join(lines)
 
 
-def explain_with_ai(report):
-    """Ask Groq to explain the report. Returns None if we cannot or should not."""
-    api_key = os.environ.get("GROQ_API_KEY")
-    if not api_key:
-        return None
-    try:
-        from openai import OpenAI  # optional dependency: pip install openai
-    except ImportError:
-        return None
-
-    client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": f"{PROMPT}\n{report}"}],
-    )
-    return response.choices[0].message.content.strip()
-
-
 def main():
-    report = build_report()
-    print(report)
-    try:
-        explanation = explain_with_ai(report)
-    except Exception as error:  # network down, bad key, ... never crash the check
-        explanation = f"(AI explanation skipped: {error})"
-    if explanation:
-        print(f"  AI says      : {explanation}")
+    print(build_report())
     print()
 
 
