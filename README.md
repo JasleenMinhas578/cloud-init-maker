@@ -1,10 +1,13 @@
 # cloud-init-maker
 
-A small command-line tool that asks you a few questions and writes a valid
-`user-data.yaml` file for [cloud-init](https://cloud-init.io/). Use that file to
-launch an Ubuntu server that comes up with your user, your SSH key, your packages
-and (optionally) an hourly health checker already in place. Works with LXD
-containers locally and with any cloud that supports cloud-init (AWS, Azure, ...).
+A small tool, as a web form or a command-line app, that asks you a few questions
+and writes a valid `user-data.yaml` file for [cloud-init](https://cloud-init.io/).
+Use that file to launch an Ubuntu server that comes up with your user, your SSH
+key, your packages and (optionally) an hourly health checker already in place.
+Works with LXD containers locally and with any cloud that supports cloud-init
+(AWS, Azure, DigitalOcean, Multipass, ...).
+
+**Try it online:** https://cloud-init-maker-jazz.streamlit.app
 
 ## Why
 
@@ -62,10 +65,15 @@ two generated files.
 
 ### Web UI (Streamlit)
 
-Prefer clicking to typing? The same questions as a web page, with a short
-"why this matters" note under each one and a live preview of the YAML.
+Prefer clicking to typing? The web page has a server-type dropdown that
+pre-fills the software list (web server, Python app, PostgreSQL, Docker host,
+...), a package picker with suggestions, a live preview of the file, and
+step-by-step launch instructions for LXD, AWS EC2, Azure, DigitalOcean and
+Multipass.
 
 ![Screenshot of the web UI](docs/screenshot.png)
+
+Run it locally:
 
 ```bash
 pip install -e ".[web]"
@@ -75,6 +83,11 @@ streamlit run app.py
 Then open http://localhost:8501 and press **Download user-data.yaml** when you
 are happy. The page and the command-line tool share the same builder code, so
 they produce identical files.
+
+Host it for free on [Streamlit Community Cloud](https://share.streamlit.io):
+sign in with GitHub, click **Create app**, pick this repo, branch `main`,
+main file path `app.py`, and deploy. The `requirements.txt` and
+`.streamlit/config.toml` in the repo take care of packages and the dark theme.
 
 ## Test it with LXD on Ubuntu
 
@@ -142,6 +155,7 @@ Make sure the firewall or security group allows SSH (port 22), then
 | pip | package installer |
 | pytest | runs tests |
 | GitHub Actions | automatic testing |
+| Streamlit Community Cloud | free hosting |
 
 ## Health checker
 
@@ -163,13 +177,18 @@ It reports disk usage, memory usage and whether `cron` is active.
 
 - Alerts: email or chat message when a check fails.
 - More checks: CPU load, open ports, pending security updates.
-- Host the web UI online so it works without installing anything.
+- Save a filled-in form as a preset and load it again later.
 
 ## Development
 
 ```bash
-pip install -e . pytest
+pip install -e ".[web]" pytest   # [web] adds Streamlit so the web UI tests run too
 pytest -v
 ```
+
+Tests live in [tests/](tests/): `test_builder.py` checks the generated config
+(user block, key placement, packages, health option, YAML validity) and
+`test_app.py` renders the web page headlessly and checks it produces the same
+file as the builder.
 
 Licensed under the [MIT License](LICENSE).
