@@ -14,24 +14,25 @@ APP = str(Path(__file__).resolve().parent.parent / "app.py")
 KEY = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleKeyExampleKeyExampleKeyExampleKe alice@laptop"
 
 
-def test_page_renders_without_exceptions():
+def shown_yaml(app):
+    return [block.value for block in app.code if block.value.startswith("#cloud-config")]
+
+
+def test_page_renders_with_an_example_preview():
     app = AppTest.from_file(APP).run()
     assert not app.exception
     page_text = " ".join(block.value for block in app.markdown)
     assert "cloud-init-maker" in page_text
-    assert "Example" in page_text  # the use-case box is there
+    # Before anything is typed, the preview uses the example name, not the real user.
+    assert "name: alice" in shown_yaml(app)[0]
 
 
-def test_submitting_the_form_shows_yaml_that_matches_the_builder():
+def test_preview_matches_the_builder_as_you_type():
     app = AppTest.from_file(APP).run()
-    app.text_input("username").set_value("alice")
+    app.text_input("username").set_value("bob")
     app.text_area("ssh_key").set_value(KEY)
-    app.toggle("health").set_value(True)
-    app.button[0].click().run()  # the form's "Generate" button
+    app.toggle("health").set_value(True).run()
     assert not app.exception
 
-    shown = [block.value for block in app.code if block.value.startswith("#cloud-config")]
-    assert shown, "the page should show the generated YAML after submit"
-
-    expected = to_yaml(build_config(ServerOptions(username="alice", ssh_key=KEY, health=True)))
-    assert shown[0].strip() == expected.strip()  # the code block drops the final newline
+    expected = to_yaml(build_config(ServerOptions(username="bob", ssh_key=KEY, health=True)))
+    assert shown_yaml(app)[0].strip() == expected.strip()  # the code block drops the final newline
