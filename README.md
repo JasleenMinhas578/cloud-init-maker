@@ -88,6 +88,9 @@ Host it for free on [Streamlit Community Cloud](https://share.streamlit.io):
 sign in with GitHub, click **Create app**, pick this repo, branch `main`,
 main file path `app.py`, and deploy. The `requirements.txt` and
 `.streamlit/config.toml` in the repo take care of packages and the dark theme.
+Community Cloud puts an app to sleep after about 12 hours without visitors, so
+[keep-awake.yml](.github/workflows/keep-awake.yml) opens the page in a headless
+browser every 2 hours. It needs the app's sharing setting to be public.
 
 ## Test it with LXD on Ubuntu
 
