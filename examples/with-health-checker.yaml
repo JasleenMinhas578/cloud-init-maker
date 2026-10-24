@@ -1,0 +1,138 @@
+#cloud-config
+users:
+  - name: alice
+    shell: /bin/bash
+    groups:
+      - sudo
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleKeyReplaceWithYourOwnPublicKey0000 alice@laptop
+hostname: web1
+manage_etc_hosts: true
+timezone: America/St_Johns
+write_files:
+  - path: /opt/health/health.py
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env python3
+      """Tiny server health checker.
+
+      cloud-init copies this file to /opt/health/health.py on the new server and a
+      cron job runs it every hour, appending the output to /var/log/health.log.
+
+      It checks three things:
+        * disk usage of "/"           (shutil.disk_usage)
+        * memory used                 (/proc/meminfo: MemTotal and MemAvailable)
+        * whether some services run   (systemctl is-active <name>)
+
+      Optional AI explanation: if the GROQ_API_KEY environment variable is set AND the
+      `openai` package is installed, the report is sent to Groq and a two-sentence
+      plain-English answer is printed too. Without a key it just prints the numbers.
+      The key is only ever read from the environment, never written in this file.
+      """
+
+      import os
+      import shutil
+      import subprocess
+      from datetime import datetime
+
+      # Edit this list to watch more services, e.g. ["cron", "ssh", "nginx"].
+      SERVICES = ["cron"]
+
+      # Above these percentages the report says WARNING.
+      DISK_WARN = 90
+      MEMORY_WARN = 90
+
+      PROMPT = (
+          "You are a friendly Linux helper. In two short sentences, say whether this "
+          "server is healthy, and if anything looks wrong, give one fix. Data:"
+      )
+
+
+      def disk_percent(path="/"):
+          """Percentage of the root disk that is used."""
+          usage = shutil.disk_usage(path)
+          return usage.used / usage.total * 100
+
+
+      def memory_percent():
+          """Percentage of memory in use, read straight from the kernel."""
+          values = {}
+          with open("/proc/meminfo") as meminfo:
+              for line in meminfo:
+                  # Each line looks like:  MemTotal:       16318432 kB
+                  key, rest = line.split(":", 1)
+                  values[key] = int(rest.split()[0])
+          total = values["MemTotal"]
+          available = values["MemAvailable"]
+          return (total - available) / total * 100
+
+
+      def service_active(name):
+          """True if systemd says the service is running."""
+          result = subprocess.run(
+              ["systemctl", "is-active", name], capture_output=True, text=True
+          )
+          return result.stdout.strip() == "active"
+
+
+      def build_report():
+          """Collect all checks into a short text report."""
+          disk = disk_percent()
+          memory = memory_percent()
+          lines = [
+              f"Health check {datetime.now():%Y-%m-%d %H:%M}",
+              f"  disk   /     : {disk:5.1f}% used" + ("  WARNING" if disk > DISK_WARN else ""),
+              f"  memory       : {memory:5.1f}% used" + ("  WARNING" if memory > MEMORY_WARN else ""),
+          ]
+          for name in SERVICES:
+              state = "active" if service_active(name) else "NOT ACTIVE  WARNING"
+              lines.append(f"  service {name:<6}: {state}")
+          return "\n".join(lines)
+
+
+      def explain_with_ai(report):
+          """Ask Groq to explain the report. Returns None if we cannot or should not."""
+          api_key = os.environ.get("GROQ_API_KEY")
+          if not api_key:
+              return None
+          try:
+              from openai import OpenAI  # optional dependency: pip install openai
+          except ImportError:
+              return None
+
+          client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
+          response = client.chat.completions.create(
+              model="llama-3.3-70b-versatile",
+              messages=[{"role": "user", "content": f"{PROMPT}\n{report}"}],
+          )
+          return response.choices[0].message.content.strip()
+
+
+      def main():
+          report = build_report()
+          print(report)
+          try:
+              explanation = explain_with_ai(report)
+          except Exception as error:  # network down, bad key, ... never crash the check
+              explanation = f"(AI explanation skipped: {error})"
+          if explanation:
+              print(f"  AI says      : {explanation}")
+          print()
+
+
+      if __name__ == "__main__":
+          main()
+  - path: /etc/cron.d/health
+    permissions: '0644'
+    content: |
+      0 * * * * root /usr/bin/python3 /opt/health/health.py >> /var/log/health.log 2>&1
+package_update: true
+packages:
+  - nginx
+  - git
+  - python3
+  - python3-venv
+runcmd:
+  - echo hello from cloud-init > /root/hello.txt
+  - python3 /opt/health/health.py >> /var/log/health.log 2>&1

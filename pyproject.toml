@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cloud-init-maker"
+version = "0.1.0"
+description = "Answer a few questions, get a valid cloud-init user-data.yaml for Ubuntu servers."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6.0"]
+
+[project.optional-dependencies]
+# `pip install -e .[ai]` if you want the health checker's AI explanation locally.
+ai = ["openai>=1.0"]
+
+[project.scripts]
+cloud-init-maker = "cloud_init_maker.cli:main"
+
+[tool.setuptools]
+packages = ["cloud_init_maker"]

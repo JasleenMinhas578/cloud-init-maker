@@ -1,0 +1,33 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the app and pytest
+        run: pip install -e . pytest
+
+      - name: Run the tests
+        run: pytest -v
+
+      # The Ubuntu runner has cloud-init installed, so we can also validate
+      # the example files against the real cloud-init schema.
+      - name: Validate example files with cloud-init schema
+        run: |
+          for f in examples/*.yaml; do
+            echo "== $f"
+            cloud-init schema --config-file "$f"
+          done
