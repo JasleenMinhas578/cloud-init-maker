@@ -1,0 +1,4 @@
+# Used by Streamlit Community Cloud to install what app.py needs.
+# For local development use `pip install -e ".[web]"` instead (see README).
+PyYAML>=6.0
+streamlit>=1.45
