@@ -16,7 +16,7 @@ tool writes that file for you, with the indentation right every time.
 ## How it works
 
 ```
-You answer questions  →  app writes user-data.yaml  →  LXD / cloud starts server  →  cloud-init sets it up
+You answer questions (terminal or web page)  →  app writes user-data.yaml  →  LXD / cloud starts server  →  cloud-init sets it up
 ```
 
 ## Install
@@ -60,6 +60,20 @@ cloud-init-maker --yes \
 Run `cloud-init-maker --help` for the full list. See [examples/](examples/) for
 two generated files.
 
+### Web UI (Streamlit)
+
+Prefer clicking to typing? The same questions as a web page, with a short
+"why this matters" note under each one and a live preview of the YAML.
+
+```bash
+pip install -e ".[web]"
+streamlit run app.py
+```
+
+Then open http://localhost:8501 and press **Download user-data.yaml** when you
+are happy. The page and the command-line tool share the same builder code, so
+they produce identical files.
+
 ## Test it with LXD on Ubuntu
 
 1. Install LXD: `sudo snap install lxd`
@@ -93,6 +107,7 @@ two generated files.
 | Python | app language |
 | PyYAML | writes YAML |
 | argparse | command-line flags |
+| Streamlit | web UI |
 | YAML | config format |
 | cloud-init | first-boot setup |
 | user-data | setup instructions |
@@ -137,7 +152,7 @@ file.
 
 - Alerts: email or chat message when a check fails.
 - More checks: CPU load, open ports, pending security updates.
-- Web version: same questions in a browser form.
+- Host the web UI online so it works without installing anything.
 
 ## Development
 
