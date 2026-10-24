@@ -90,6 +90,21 @@ they produce identical files.
 7. If you chose the health checker: `sudo lxc exec test1 -- cat /var/log/health.log`
 8. Clean up: `sudo lxc delete --force test1`
 
+## Use it on a cloud instead
+
+The same file works anywhere Ubuntu runs. Paste it into the box the provider
+gives you, or pass it on the command line:
+
+| Where | Console box | Command line |
+|---|---|---|
+| AWS EC2 | Advanced details → **User data** | `aws ec2 run-instances ... --user-data file://user-data.yaml` |
+| Azure VM | Advanced tab → **Custom data** | `az vm create ... --custom-data user-data.yaml` |
+| DigitalOcean | Advanced options → **Add initialization scripts** | `doctl compute droplet create ... --user-data-file user-data.yaml` |
+| Multipass | n/a | `multipass launch 24.04 --name test1 --cloud-init user-data.yaml` |
+
+Make sure the firewall or security group allows SSH (port 22), then
+`ssh <user>@<public-ip>`. The web UI shows the full steps for each platform.
+
 ## Troubleshooting
 
 - **`Permission denied (publickey)`**: the key is not in the file, or it is at the

@@ -1,10 +1,10 @@
 # Look and feel of the Streamlit page (picked up automatically by `streamlit run`).
 [theme]
-base = "light"
-primaryColor = "#2563eb"           # buttons, active tab, focus rings
-backgroundColor = "#f8fafc"
-secondaryBackgroundColor = "#ffffff"
-textColor = "#0f172a"
+base = "dark"
+primaryColor = "#3b82f6"           # buttons, active choices, focus rings
+backgroundColor = "#0b1220"
+secondaryBackgroundColor = "#141d2e"
+textColor = "#e5e7eb"
 font = "sans serif"
 
 [client]
