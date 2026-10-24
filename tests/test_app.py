@@ -16,13 +16,15 @@ APP = str(Path(__file__).resolve().parent.parent / "app.py")
 def test_page_renders_without_exceptions():
     app = AppTest.from_file(APP).run()
     assert not app.exception
-    assert "cloud-init-maker" in app.title[0].value
+    page_text = " ".join(block.value for block in app.markdown)
+    assert "cloud-init-maker" in page_text
+    assert "The problem" in page_text  # the explanation cards are there
 
 
 def test_page_yaml_matches_the_builder():
     app = AppTest.from_file(APP).run()
     app.text_input("username").set_value("alice").run()
-    app.checkbox("health").check().run()
+    app.toggle("health").set_value(True).run()
     assert not app.exception
 
     shown = [block.value for block in app.code if block.value.startswith("#cloud-config")]

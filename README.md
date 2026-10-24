@@ -65,6 +65,8 @@ two generated files.
 Prefer clicking to typing? The same questions as a web page, with a short
 "why this matters" note under each one and a live preview of the YAML.
 
+![Screenshot of the web UI](docs/screenshot.png)
+
 ```bash
 pip install -e ".[web]"
 streamlit run app.py

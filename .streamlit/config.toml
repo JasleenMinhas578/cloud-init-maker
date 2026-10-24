@@ -1,0 +1,17 @@
+# Look and feel of the Streamlit page (picked up automatically by `streamlit run`).
+[theme]
+base = "light"
+primaryColor = "#2563eb"           # buttons, active tab, focus rings
+backgroundColor = "#f8fafc"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#0f172a"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"   # hides the Deploy button and dev menu
+
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
